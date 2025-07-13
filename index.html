@@ -79,9 +79,7 @@
         <div id="question-card" class="bg-white/10 backdrop-blur-sm rounded-xl p-8 mb-8 shadow-xl transition-all">
             <h2 id="question-text" class="text-2xl md:text-3xl font-semibold mb-8 leading-relaxed"></h2>
             
-            <div id="options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Options will be inserted here -->
-            </div>
+            <div id="options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
         <div id="quiz-progress" class="w-full bg-gray-800/50 rounded-full h-4 mb-8">
@@ -94,8 +92,8 @@
             <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e14326c7-8db6-4246-8ea4-79595a164559.png" alt="Golden trophy with star burst background indicating success" class="mx-auto rounded-lg mb-8 shadow-lg">
             <h2 class="text-4xl font-bold text-green-400 mb-4">Congratulations!</h2>
             <p class="text-2xl mb-6">You scored <span id="final-score" class="font-bold">0</span> points and saved your computer from shutdown!</p>
-            <p class="text-lg mb-8">Your knowledge and quick thinking have prevailed!</p>
-            <button onclick="location.reload()" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full text-lg hover:opacity-90 transition-all">
+            <p class="text-lg mb-8">Okay okay, I’ll admit it — you’re smarter than I thought 😏 <br> Now go flex that genius brain on something bigger. Proud of you!</p>
+            <button id="play-again-btn" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full text-lg hover:opacity-90 transition-all">
                 Play Again
             </button>
         </div>
@@ -141,6 +139,7 @@
                 elem.msRequestFullscreen();
             }
         }
+
         
 // Quiz questions and answers
 const questions = [
@@ -646,6 +645,7 @@ const questions = [
     }
 ];
 
+
         // Shuffle the questions and select 30 (we'll repeat if needed)
         function getRandomQuestions() {
             let shuffled = [...questions];
@@ -679,6 +679,35 @@ const questions = [
         const loseScoreDisplay = document.getElementById('lose-score');
         const shutdownTimer = document.getElementById('shutdown-timer');
         const startBtn = document.getElementById('start-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+
+        // Load sound effects
+        const correctSound = new Audio('sounds/correct.mp3');
+        const wrongSound = new Audio('sounds/wrong.mp3');
+        const winSound = new Audio('sounds/win.mp3');
+        const loseSound = new Audio('sounds/lose.mp3');
+
+        // Load background music
+        const startMusic = new Audio('sounds/start-music.mp3');
+        const quizMusic = new Audio('sounds/quiz-music.mp3');
+
+        // Load button click sound
+        const buttonClickSound = new Audio('sounds/button-click.mp3');
+
+        // Set background music to loop
+        startMusic.loop = true;
+        quizMusic.loop = true;
+
+        // Play start music
+        function playStartMusic() {
+            startMusic.play().catch(e => console.error("Error playing start music:", e)); // Added catch for autoplay policy
+        }
+
+        // Play button click sound
+        function playButtonClickSound() {
+            buttonClickSound.currentTime = 0; // Reset to start
+            buttonClickSound.play().catch(e => console.error("Error playing button click sound:", e));
+        }
 
         // Game state
         let currentQuestions = [];
@@ -691,19 +720,18 @@ const questions = [
 
         // Initialize quiz and shutdown timer
         function startQuiz() {
+            // Stop start music and play quiz music
+            startMusic.pause();
+            startMusic.currentTime = 0; // Reset to start
+            quizMusic.play().catch(e => console.error("Error playing quiz music:", e));
+
             // Set initial shutdown timer (16 minutes)
             try {
-                // This would be replaced with actual OS-specific shutdown command in EXE
                 console.log("Would execute: shutdown /s /t 960");
-                // Example for Electron: require('child_process').exec('shutdown /s /t 960');
             } catch (e) {
                 console.log("Shutdown command failed:", e);
             }
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+                
             startScreen.classList.add('hidden');
             quizContainer.classList.remove('hidden');
             
@@ -750,9 +778,11 @@ const questions = [
                 options[index].classList.add('correct', 'pulse');
                 score += 2.5;
                 updateScore();
+                correctSound.play().catch(e => console.error("Error playing correct sound:", e));
             } else {
                 options[index].classList.add('incorrect');
                 options[question.answer].classList.add('correct', 'pulse');
+                wrongSound.play().catch(e => console.error("Error playing wrong sound:", e));
             }
             
             setTimeout(() => {
@@ -795,24 +825,24 @@ const questions = [
             quizContainer.classList.add('hidden');
             resultScreen.classList.remove('hidden');
             
+            // Stop quiz music
+            quizMusic.pause();
+            quizMusic.currentTime = 0; // Reset to start
+
             if (score >= 52) {
                 winScreen.classList.remove('hidden');
                 finalScoreDisplay.textContent = score.toFixed(1);
+                winSound.play().catch(e => console.error("Error playing win sound:", e));
                 // Cancel shutdown if user wins
                 try {
                     console.log("Would execute: shutdown /a");
-                    // Example for Electron: require('child_process').exec('shutdown /a');
                 } catch (e) {
                     console.log("Shutdown cancel failed:", e);
                 }
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
             } else {
                 loseScreen.classList.remove('hidden');
                 loseScoreDisplay.textContent = score.toFixed(1);
+                loseSound.play().catch(e => console.error("Error playing lose sound:", e));
                 startShutdownCountdown();
             }
         }
@@ -830,27 +860,74 @@ const questions = [
                 if (remaining <= 0) {
                     clearInterval(shutdownCountdown);
                     shutdownTimer.textContent = "Shutting down...";
-                    // Execute shutdown command
                     try {
                         console.log("Would execute: shutdown /s /t 30");
-                        // Example for Electron: require('child_process').exec('shutdown /s /t 30');
                     } catch (e) {
                         console.log("Final shutdown command failed:", e);
                     }
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    });
                 }
             }, 1000);
         }
 
-        // Event listeners
-        startBtn.addEventListener('click', function() {
-            enterFullscreen(); 
-            startQuiz();
-        });
+       // Event listeners
+startBtn.addEventListener('click', function() {
+    playButtonClickSound(); // Play button click sound
+    enterFullscreen(); 
+    startQuiz();
+});
+
+playAgainBtn.addEventListener('click', function() {
+    playButtonClickSound(); // Play button click sound
+    resetGame(); // Reset the game state
+});
+
+// Function to reset the game state
+function resetGame() {
+    // Hide the result screen and show the start screen
+    resultScreen.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+
+    // Reset game variables
+    currentQuestions = [];
+    currentQuestionIndex = 0;
+    score = 0;
+    timeLeft = 16 * 60; // Reset time to 16 minutes
+
+    // Reset the score display and countdown
+    scoreDisplay.textContent = '0';
+    countdownMinutes.textContent = '16';
+    countdownSeconds.textContent = '00';
+}
+
+// Initialize quiz and shutdown timer
+function startQuiz() {
+    // Stop start music and play quiz music
+    startMusic.pause();
+    startMusic.currentTime = 0; // Reset to start
+    quizMusic.play().catch(e => console.error("Error playing quiz music:", e));
+
+    // Set initial shutdown timer (16 minutes)
+    try {
+        console.log("Would execute: shutdown /s /t 960");
+    } catch (e) {
+        console.log("Shutdown command failed:", e);
+    }
+        
+    startScreen.classList.add('hidden');
+    quizContainer.classList.remove('hidden');
+    
+    currentQuestions = getRandomQuestions();
+    currentQuestionIndex = 0;
+    score = 0;
+    timeLeft = 16 * 60;
+    
+    updateScore();
+    updateCountdown();
+    showQuestion();
+    
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
     </script>
 </body>
 </html>
