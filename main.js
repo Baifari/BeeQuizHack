@@ -31,3 +31,15 @@ app.whenReady().then(() => {
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
+
+const win = new BrowserWindow({
+  width: 1200,
+  height: 800,
+  fullscreen: true,
+  frame: false,
+  icon: __dirname + '/icon.ico', // 👈 icon here
+  webPreferences: {
+    nodeIntegration: true,
+    contextIsolation: false
+  }
+});
