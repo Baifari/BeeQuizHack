@@ -1,34 +1,32 @@
-name: Build Windows EXE
+name: Build Single EXE
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
 
-      - name: Install Electron Packager
-        run: npm install --save-dev electron-packager
+      - name: Build EXE using Electron Builder
+        run: npm run build
 
-      - name: Package App
-        run: npx electron-packager . BeeQuizHack --platform=win32 --arch=x64 --icon=icon.ico --overwrite
-
-      - name: Upload EXE
+      - name: Upload EXE Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BeeQuizHack-exe
-          path: BeeQuizHack-win32-x64/
+          name: BeeQuizHack-installer
+          path: dist/*.exe
