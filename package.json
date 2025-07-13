@@ -1,0 +1,13 @@
+{
+  "name": "BeeQuizHack",
+  "version": "1.6.0",
+  "description": "Quiz that shuts down your PC if you lose",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Baifari",
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}
