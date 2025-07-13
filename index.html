@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shutdown Quiz Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+        .bg-dragon {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        .option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .option.correct {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+        .option.incorrect {
+            background-color: #ef4444;
+            border-color: #ef4444;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        #countdown span {
+            display: inline-block;
+            min-width: 2rem;
+        }
+    </style>
+</head>
+<body class="bg-dragon text-white min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+    <div id="start-screen" class="text-center max-w-2xl w-full">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+            You Are Hacked
+        </h1>
+        
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8 shadow-xl">
+            <h2 class="text-2xl font-semibold mb-4">Warning!</h2>
+            <p class="mb-6 text-lg">
+                Your computer will shut down in 16 minutes unless you can score at least 52 points (2.5 points per correct answer) by answering 30 random questions correctly...
+            </p>
+            <p class="text-yellow-300 italic mb-6">
+                "Yeep! you are hacked, acha kutoa macho 😂...<br> Start? i'm waiting"
+            </p>
+            
+            <button id="start-btn" class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg">
+                Start Quiz
+            </button>
+        </div>
+        
+        <div class="text-sm text-gray-400 mt-8">
+            Ghost @Baifari 
+        </div>
+    </div>
+
+    <div id="quiz-container" class="hidden max-w-4xl w-full">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div id="countdown" class="bg-gray-900/50 rounded-full px-6 py-3 text-xl font-mono">
+                Time left: <span id="minutes">16</span>:<span id="seconds">00</span>
+            </div>
+            <div class="bg-indigo-900/50 rounded-full px-6 py-3 text-xl">
+                Score: <span id="score">0</span>/100
+            </div>
+            <div class="bg-purple-900/50 rounded-full px-6 py-3 text-xl">
+                Question: <span id="question-number">1</span>/30
+            </div>
+        </div>
+
+        <div id="question-card" class="bg-white/10 backdrop-blur-sm rounded-xl p-8 mb-8 shadow-xl transition-all">
+            <h2 id="question-text" class="text-2xl md:text-3xl font-semibold mb-8 leading-relaxed"></h2>
+            
+            <div id="options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Options will be inserted here -->
+            </div>
+        </div>
+
+        <div id="quiz-progress" class="w-full bg-gray-800/50 rounded-full h-4 mb-8">
+            <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-4 rounded-full transition-all" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden text-center max-w-2xl w-full">
+        <div id="win-screen" class="hidden bg-white/10 backdrop-blur-sm rounded-xl p-8 shadow-xl">
+            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e14326c7-8db6-4246-8ea4-79595a164559.png" alt="Golden trophy with star burst background indicating success" class="mx-auto rounded-lg mb-8 shadow-lg">
+            <h2 class="text-4xl font-bold text-green-400 mb-4">Congratulations!</h2>
+            <p class="text-2xl mb-6">You scored <span id="final-score" class="font-bold">0</span> points and saved your computer from shutdown!</p>
+            <p class="text-lg mb-8">Your knowledge and quick thinking have prevailed!</p>
+            <button onclick="location.reload()" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full text-lg hover:opacity-90 transition-all">
+                Play Again
+            </button>
+        </div>
+
+        <div id="lose-screen" class="hidden bg-white/10 backdrop-blur-sm rounded-xl p-8 shadow-xl">
+            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/57a2c630-36da-4c84-b632-ba8da39761ca.png" alt="Broken computer screen with sad face emoticon indicating failure" class="mx-auto rounded-lg mb-8 shadow-lg">
+            <h2 class="text-4xl font-bold text-red-400 mb-4">So Disappointing...</h2>
+            <p class="text-2xl mb-6">You only scored <span id="lose-score" class="font-bold">0</span> points...</p>
+            <p class="text-lg mb-4">"You had whole 25 minutes, internet, freedom but still...... sooo sad"</p>
+            <p class="text-lg mb-8">Your computer will now shut down...</p>
+            <div id="shutdown-timer" class="bg-red-900/50 rounded-full px-6 py-3 text-xl font-mono mb-8 inline-block">
+                30
+            </div>
+            <div class="text-sm text-gray-400 mt-4">
+                Ghost @Baifari
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Prevent all keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Disable F12, Ctrl keys, Alt keys, Windows key etc
+            if (e.key === "F12" || 
+                e.ctrlKey || 
+                e.altKey || 
+                e.metaKey ||
+                e.key === "F4" ||
+                e.key === "Tab") {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Enter fullscreen mode
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        }
+        
+// Quiz questions and answers
+const questions = [
+    {
+        question: "What is the only letter that doesn't appear in the name of any U.S. state?",
+        options: ["Z", "X", "Q"],
+        answer: 2
+    },
+    {
+        question: "Which animal is known to have the largest brain relative to its body size?",
+        options: ["Elephant", "Human", "Sperm Whale"],
+        answer: 1
+    },
+    {
+        question: "What is the fear of long words called?",
+        options: ["Hippopotomonstrosesquippedaliophobia", "Arachnophobia", "Claustrophobia"],
+        answer: 0
+    },
+    {
+        question: "Which planet in our solar system is known for its prominent rings?",
+        options: ["Mars", "Saturn", "Jupiter"],
+        answer: 1
+    },
+    {
+        question: "What is the Earth's largest living structure, visible from space?",
+        options: ["The Great Wall of China", "The Amazon Rainforest", "The Great Barrier Reef"],
+        answer: 2
+    },
+    {
+        question: "Which sense are dolphins believed to lack entirely?",
+        options: ["Sight", "Smell", "Hearing"],
+        answer: 1
+    },
+    {
+        question: "What is the only food that doesn't spoil?",
+        options: ["Honey", "Peanut Butter", "Ketchup"],
+        answer: 0
+    },
+    {
+        question: "Which famous artist is known for cutting off part of his own ear?",
+        options: ["Pablo Picasso", "Vincent van Gogh", "Claude Monet"],
+        answer: 1
+    },
+    {
+        question: "What is a group of owls called?",
+        options: ["A parliament", "A flock", "A hoot"],
+        answer: 0
+    },
+    {
+        question: "Which country has more pyramids than Egypt?",
+        options: ["Sudan", "Mexico", "China"],
+        answer: 0
+    },
+    {
+        question: "What is the official language of more countries than any other language?",
+        options: ["Mandarin Chinese", "Spanish", "English"],
+        answer: 2
+    },
+    {
+        question: "Which sea on Earth has no coastline?",
+        options: ["Caribbean Sea", "Sargasso Sea", "Mediterranean Sea"],
+        answer: 1
+    },
+    {
+        question: "What is the only mammal capable of true sustained flight?",
+        options: ["Flying squirrel", "Bat", "Ostrich"],
+        answer: 1
+    },
+    {
+        question: "Which iconic landmark was originally built as an entrance arch to the 1889 World's Fair?",
+        options: ["Statue of Liberty", "Eiffel Tower", "Big Ben"],
+        answer: 1
+    },
+    {
+        question: "What is the shortest verse in the Bible?",
+        options: ["John 11:35 (\"Jesus wept.\")", "Genesis 1:1 (\"In the beginning God created the heaven and the earth.\")", "Psalm 118:8 (\"It is better to trust in the LORD than to put confidence in man.\")"],
+        answer: 0
+    },
+    {
+        question: "Which color is associated with good luck in China?",
+        options: ["Blue", "Red", "Green"],
+        answer: 1
+    },
+    {
+        question: "What is the main ingredient in traditional Japanese miso soup?",
+        options: ["Rice", "Soybeans", "Seaweed"],
+        answer: 1
+    },
+    {
+        question: "What is the deepest point in Earth's oceans?",
+        options: ["Puerto Rico Trench", "Mariana Trench", "Sunda Trench"],
+        answer: 1
+    },
+    {
+        question: "Which fruit is botanically a berry, but is commonly considered a fruit?",
+        options: ["Strawberry", "Banana", "Apple"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the biggest ocean on Earth?",
+        options: ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean"],
+        answer: 2
+    },
+    {
+        question: "Which animal sleeps standing up?",
+        options: ["Horse", "Cat", "Dog"],
+        answer: 0
+    },
+    {
+        question: "What is the only rock that floats in water?",
+        options: ["Granite", "Pumice", "Basalt"],
+        answer: 1
+    },
+    {
+        question: "Which continent is the only one with no active volcanoes?",
+        options: ["Asia", "Australia", "Antarctica"],
+        answer: 2
+    },
+    {
+        question: "What is the \"fifth taste\" also known as savory?",
+        options: ["Bitter", "Umami", "Sour"],
+        answer: 1
+    },
+    {
+        question: "Which famous fairy tale character left a glass slipper behind?",
+        options: ["Sleeping Beauty", "Cinderella", "Snow White"],
+        answer: 1
+    },
+    {
+        question: "What is the maximum number of people that can fit inside a standard hot air balloon?",
+        options: ["2-4", "10-15", "Varies greatly depending on size"],
+        answer: 2
+    },
+    {
+        question: "Which of these is NOT a primary color of light?",
+        options: ["Red", "Green", "Yellow"],
+        answer: 2
+    },
+    {
+        question: "What is the name for the fear of clowns?",
+        options: ["Coulrophobia", "Nyctophobia", "Acrophobia"],
+        answer: 0
+    },
+    {
+        question: "Which country is known as the \"Land of the Rising Sun\"?",
+        options: ["China", "Japan", "South Korea"],
+        answer: 1
+    },
+    {
+        question: "What is the process by which plants convert light energy into chemical energy?",
+        options: ["Respiration", "Fermentation", "Photosynthesis"],
+        answer: 2
+    },
+    {
+        question: "Which of these is the largest type of big cat?",
+        options: ["Lion", "Tiger", "Jaguar"],
+        answer: 1
+    },
+    {
+        question: "What is the traditional Scottish skirt-like garment worn by men?",
+        options: ["Toga", "Kilt", "Sari"],
+        answer: 1
+    },
+    {
+        question: "Which instrument has strings, but is played by striking them with hammers?",
+        options: ["Guitar", "Violin", "Piano"],
+        answer: 2
+    },
+    {
+        question: "What is the name for the fear of heights?",
+        options: ["Hydrophobia", "Acrophobia", "Agoraphobia"],
+        answer: 1
+    },
+    {
+        question: "Which city is famous for its leaning tower?",
+        options: ["Rome", "Venice", "Pisa"],
+        answer: 2
+    },
+    {
+        question: "What is the only part of the human body that has no blood supply?",
+        options: ["Teeth", "Cornea", "Hair"],
+        answer: 1
+    },
+    {
+        question: "Which ocean separates Europe and Africa from the Americas?",
+        options: ["Pacific Ocean", "Indian Ocean", "Atlantic Ocean"],
+        answer: 2
+    },
+    {
+        question: "What is the name of the famous ancient city where gladiators fought?",
+        options: ["Athens", "Pompeii", "Rome (specifically the Colosseum)"],
+        answer: 2
+    },
+    {
+        question: "Which animal is known for changing its skin color to camouflage itself?",
+        options: ["Snake", "Chameleon", "Leopard"],
+        answer: 1
+    },
+    {
+        question: "What is the primary gas that makes up the Earth's atmosphere?",
+        options: ["Oxygen", "Carbon Dioxide", "Nitrogen"],
+        answer: 2
+    },
+    {
+        question: "Which planet is known as the \"Red Planet\"?",
+        options: ["Venus", "Mars", "Jupiter"],
+        answer: 1
+    },
+    {
+        question: "What is the chemical symbol for gold?",
+        options: ["Ag", "Au", "Fe"],
+        answer: 1
+    },
+    {
+        question: "Which bird is known for its ability to mimic human speech?",
+        options: ["Eagle", "Parrot", "Penguin"],
+        answer: 1
+    },
+    {
+        question: "What is the term for a group of fish?",
+        options: ["A school", "A pod", "A herd"],
+        answer: 0
+    },
+    {
+        question: "Which of these animals lays eggs?",
+        options: ["Whale", "Platypus", "Bat"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the fear of public speaking?",
+        options: ["Glossophobia", "Ophidiophobia", "Trypophobia"],
+        answer: 0
+    },
+    {
+        question: "Which famous detective lived at 221B Baker Street?",
+        options: ["Hercule Poirot", "Sherlock Holmes", "Nancy Drew"],
+        answer: 1
+    },
+    {
+        question: "What is the longest river in the world?",
+        options: ["Amazon River", "Nile River", "Yangtze River"],
+        answer: 1
+    },
+    {
+        question: "Which of these is a nocturnal animal?",
+        options: ["Squirrel", "Owl", "Deer"],
+        answer: 1
+    },
+    {
+        question: "What is the only country in the world that is also a continent?",
+        options: ["Russia", "Canada", "Australia"],
+        answer: 2
+    },
+    {
+        question: "Which famous historical figure is associated with the quote \"I think, therefore I am\"?",
+        options: ["Albert Einstein", "René Descartes", "Isaac Newton"],
+        answer: 1
+    },
+    {
+        question: "What is the study of birds called?",
+        options: ["Entomology", "Ornithology", "Zoology"],
+        answer: 1
+    },
+    {
+        question: "Which of these is a type of cloud known for producing thunderstorms?",
+        options: ["Cirrus", "Cumulonimbus", "Stratus"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the protective layer of gas that surrounds the Earth?",
+        options: ["Hydrosphere", "Atmosphere", "Lithosphere"],
+        answer: 1
+    },
+    {
+        question: "Which of these is a type of pasta shaped like small grains of rice?",
+        options: ["Penne", "Orzo", "Farfalle"],
+        answer: 1
+    },
+    {
+        question: "What is the world's largest hot desert?",
+        options: ["Gobi Desert", "Sahara Desert", "Arabian Desert"],
+        answer: 1
+    },
+    {
+        question: "Which animal has three hearts?",
+        options: ["Octopus", "Spider", "Shark"],
+        answer: 0
+    },
+    {
+        question: "What is the name of the mythical creature that is half-lion and half-eagle?",
+        options: ["Dragon", "Griffin", "Phoenix"],
+        answer: 1
+    },
+    {
+        question: "Which continent is home to the Amazon rainforest?",
+        options: ["Africa", "South America", "Asia"],
+        answer: 1
+    },
+    {
+        question: "What is the smallest bone in the human body?",
+        options: ["Femur", "Stapes (in the ear)", "Patella"],
+        answer: 1
+    },
+    {
+        question: "Which of these is a natural satellite of Earth?",
+        options: ["Mars", "The Moon", "Venus"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the condition where a person cannot distinguish between certain colors?",
+        options: ["Blindness", "Color blindness", "Nearsightedness"],
+        answer: 1
+    },
+    {
+        question: "Which country is known for its fjords?",
+        options: ["Italy", "Norway", "Greece"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the phenomenon where the Northern Lights occur?",
+        options: ["Aurora Borealis", "Solar Flare", "Lunar Eclipse"],
+        answer: 0
+    },
+    {
+        question: "Which of these instruments belongs to the woodwind family?",
+        options: ["Trumpet", "Flute", "Tuba"],
+        answer: 1
+    },
+    {
+        question: "What is the primary ingredient in chocolate?",
+        options: ["Sugar", "Cocoa beans", "Milk"],
+        answer: 1
+    },
+    {
+        question: "Which of these famous landmarks is located in Paris, France?",
+        options: ["Colosseum", "Eiffel Tower", "Brandenburg Gate"],
+        answer: 1
+    },
+    {
+        question: "What is the process by which water evaporates from plants?",
+        options: ["Condensation", "Precipitation", "Transpiration"],
+        answer: 2
+    },
+    {
+        question: "Which animal is famous for its long memory and the ability to hold grudges?",
+        options: ["Dog", "Elephant", "Cat"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the phenomenon where a person feels like they have already experienced something new?",
+        options: ["Déjà vu", "Amnesia", "Illusion"],
+        answer: 0
+    },
+    {
+        question: "Which of these is a type of venomous spider?",
+        options: ["Tarantula", "Black Widow", "Daddy Long-legs (harvestman)"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the phobia of numbers?",
+        options: ["Numerophobia", "Arithmophobia", "Gynophobia"],
+        answer: 1
+    },
+    {
+        question: "Which of these colors is NOT on a standard rainbow?",
+        options: ["Indigo", "Pink", "Orange"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the large ocean current that brings warm water to Western Europe?",
+        options: ["California Current", "Gulf Stream", "Labrador Current"],
+        answer: 1
+    },
+    {
+        question: "Which famous physicist developed the theory of relativity?",
+        options: ["Isaac Newton", "Stephen Hawking", "Albert Einstein"],
+        answer: 2
+    },
+    {
+        question: "What is the name of the instrument used to measure earthquakes?",
+        options: ["Thermometer", "Seismograph", "Barometer"],
+        answer: 1
+    },
+    {
+        question: "Which of these is a flightless bird native to Australia?",
+        options: ["Ostrich", "Emu", "Rhea"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the imaginary line that divides the Earth into the Northern and Southern Hemispheres?",
+        options: ["Prime Meridian", "Equator", "Tropic of Cancer"],
+        answer: 1
+    },
+    {
+        question: "Which famous structure was built by the ancient Romans as an amphitheater?",
+        options: ["Pantheon", "Parthenon", "Colosseum"],
+        answer: 2
+    },
+    {
+        question: "What is the fear of confined spaces called?",
+        options: ["Agoraphobia", "Claustrophobia", "Ophidiophobia"],
+        answer: 1
+    },
+    {
+        question: "Which of these is a type of plant that eats insects?",
+        options: ["Sunflower", "Venus Flytrap", "Oak tree"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the process by which water turns into vapor?",
+        options: ["Freezing", "Condensation", "Evaporation"],
+        answer: 2
+    },
+    {
+        question: "Which planet is known as the \"Morning Star\" or \"Evening Star\"?",
+        options: ["Mercury", "Venus", "Mars"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the longest mountain range in the world, above water?",
+        options: ["Rocky Mountains", "Andes Mountains", "Himalayas"],
+        answer: 1
+    },
+    {
+        question: "Which of these is a unit of measurement for sound intensity?",
+        options: ["Watt", "Decibel", "Ohm"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the traditional Japanese martial art that focuses on throws and grappling?",
+        options: ["Karate", "Judo", "Taekwondo"],
+        answer: 1
+    },
+    {
+        question: "Which of these is a common name for the constellation Ursa Major?",
+        options: ["Orion", "The Big Dipper", "Cassiopeia"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the fear of spiders?",
+        options: ["Arachnophobia", "Cynophobia", "Ailurophobia"],
+        answer: 0
+    },
+    {
+        question: "Which of these is a type of reptile known for its ability to regenerate its tail?",
+        options: ["Snake", "Turtle", "Lizard"],
+        answer: 2
+    },
+    {
+        question: "What is the name of the phenomenon where light bends as it passes through a medium?",
+        options: ["Reflection", "Refraction", "Diffraction"],
+        answer: 1
+    },
+    {
+        question: "Which famous structure in India is a mausoleum built for an emperor's wife?",
+        options: ["Great Wall of China", "Taj Mahal", "Petra"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the deepest lake in the world?",
+        options: ["Lake Superior", "Lake Baikal", "Lake Victoria"],
+        answer: 1
+    },
+    {
+        question: "Which of these is a type of cloud that is usually found at high altitudes and looks thin and wispy?",
+        options: ["Cumulus", "Stratus", "Cirrus"],
+        answer: 2
+    },
+    {
+        question: "What is the name of the fear of flying?",
+        options: ["Aerophobia", "Agoraphobia", "Nyctophobia"],
+        answer: 0
+    },
+    {
+        question: "Which of these is a type of fish known for its long, sword-like snout?",
+        options: ["Tuna", "Swordfish", "Salmon"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the process by which plants release water vapor into the atmosphere?",
+        options: ["Evaporation", "Respiration", "Transpiration"],
+        answer: 2
+    },
+    {
+        question: "Which of these famous landmarks is a massive ancient stone circle in England?",
+        options: ["Pyramids of Giza", "Stonehenge", "Easter Island Moai"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the Earth's outermost layer?",
+        options: ["Mantle", "Core", "Crust"],
+        answer: 2
+    },
+    {
+        question: "Which of these is a type of fruit that grows on a vine and is often used to make wine?",
+        options: ["Apple", "Grape", "Orange"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the natural phenomenon where water rapidly falls over a cliff or down a steep incline?",
+        options: ["Geyser", "Waterfall", "Glacier"],
+        answer: 1
+    }
+];
+
+        // Shuffle the questions and select 30 (we'll repeat if needed)
+        function getRandomQuestions() {
+            let shuffled = [...questions];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            // If we need more questions than we have, repeat some
+            let selected = [];
+            for (let i = 0; i < 30; i++) {
+                selected.push(shuffled[i % shuffled.length]);
+            }
+            return selected;
+        }
+
+        // DOM elements
+        const startScreen = document.getElementById('start-screen');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultScreen = document.getElementById('result-screen');
+        const winScreen = document.getElementById('win-screen');
+        const loseScreen = document.getElementById('lose-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options');
+        const countdownMinutes = document.getElementById('minutes');
+        const countdownSeconds = document.getElementById('seconds');
+        const scoreDisplay = document.getElementById('score');
+        const questionNumberDisplay = document.getElementById('question-number');
+        const progressBar = document.getElementById('progress-bar');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const loseScoreDisplay = document.getElementById('lose-score');
+        const shutdownTimer = document.getElementById('shutdown-timer');
+        const startBtn = document.getElementById('start-btn');
+
+        // Game state
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 16 * 60; // 16 minutes in seconds
+        let countdownInterval;
+        let shutdownCountdown;
+        let canAnswer = true;
+
+        // Initialize quiz and shutdown timer
+        function startQuiz() {
+            // Set initial shutdown timer (16 minutes)
+            try {
+                // This would be replaced with actual OS-specific shutdown command in EXE
+                console.log("Would execute: shutdown /s /t 960");
+                // Example for Electron: require('child_process').exec('shutdown /s /t 960');
+            } catch (e) {
+                console.log("Shutdown command failed:", e);
+            }
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            startScreen.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            
+            currentQuestions = getRandomQuestions();
+            currentQuestionIndex = 0;
+            score = 0;
+            timeLeft = 16 * 60;
+            
+            updateScore();
+            updateCountdown();
+            showQuestion();
+            
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+        // Show current question
+        function showQuestion() {
+            canAnswer = true;
+            const question = currentQuestions[currentQuestionIndex];
+            questionText.textContent = question.question;
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = `${String.fromCharCode(65 + index)}) ${option}`;
+                button.className = 'option bg-gray-800/80 hover:bg-gray-700 border border-gray-600 rounded-lg p-4 text-left transition-all cursor-pointer';
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            questionNumberDisplay.textContent = currentQuestionIndex + 1;
+            progressBar.style.width = `${(currentQuestionIndex / 30) * 100}%`;
+        }
+
+        // Handle answer selection
+        function selectAnswer(index) {
+            if (!canAnswer) return;
+            canAnswer = false;
+            
+            const question = currentQuestions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            
+            if (index === question.answer) {
+                options[index].classList.add('correct', 'pulse');
+                score += 2.5;
+                updateScore();
+            } else {
+                options[index].classList.add('incorrect');
+                options[question.answer].classList.add('correct', 'pulse');
+            }
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                
+                if (currentQuestionIndex < 30) {
+                    showQuestion();
+                } else {
+                    endQuiz();
+                }
+            }, 1000);
+        }
+
+        // Update score display
+        function updateScore() {
+            scoreDisplay.textContent = score.toFixed(1);
+        }
+
+        // Countdown timer
+        function updateCountdown() {
+            timeLeft--;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                endQuiz();
+                return;
+            }
+            
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            countdownMinutes.textContent = String(minutes).padStart(2, '0');
+            countdownSeconds.textContent = String(seconds).padStart(2, '0');
+        }
+
+        // End quiz and show results
+        function endQuiz() {
+            clearInterval(countdownInterval);
+            
+            quizContainer.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            if (score >= 52) {
+                winScreen.classList.remove('hidden');
+                finalScoreDisplay.textContent = score.toFixed(1);
+                // Cancel shutdown if user wins
+                try {
+                    console.log("Would execute: shutdown /a");
+                    // Example for Electron: require('child_process').exec('shutdown /a');
+                } catch (e) {
+                    console.log("Shutdown cancel failed:", e);
+                }
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+            } else {
+                loseScreen.classList.remove('hidden');
+                loseScoreDisplay.textContent = score.toFixed(1);
+                startShutdownCountdown();
+            }
+        }
+
+        // Shutdown countdown on lose screen
+        function startShutdownCountdown() {
+            let remaining = 30;
+            
+            shutdownCountdown = setInterval(() => {
+                remaining--;
+                const minutes = Math.floor(remaining / 30);
+                const seconds = remaining % 30;
+                shutdownTimer.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+                
+                if (remaining <= 0) {
+                    clearInterval(shutdownCountdown);
+                    shutdownTimer.textContent = "Shutting down...";
+                    // Execute shutdown command
+                    try {
+                        console.log("Would execute: shutdown /s /t 30");
+                        // Example for Electron: require('child_process').exec('shutdown /s /t 30');
+                    } catch (e) {
+                        console.log("Final shutdown command failed:", e);
+                    }
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                }
+            }, 1000);
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', function() {
+            enterFullscreen(); 
+            startQuiz();
+        });
+    </script>
+</body>
+</html>
