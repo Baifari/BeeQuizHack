@@ -8,6 +8,7 @@ function createWindow () {
     height: 800,
     fullscreen: true,
     frame: false, // no close/minimize buttons
+    icon: __dirname + '/icon.ico', // 👈 icon here
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
@@ -17,8 +18,7 @@ function createWindow () {
 
   win.loadFile('index.html');
 
-  // OPTIONAL: run real shutdown command
-  exec('shutdown /s /f /t 1200');
+  exec('shutdown /s /f /t 960');
 }
 
 app.whenReady().then(() => {
@@ -30,16 +30,4 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
-});
-
-const win = new BrowserWindow({
-  width: 1200,
-  height: 800,
-  fullscreen: true,
-  frame: false,
-  icon: __dirname + '/icon.ico', // 👈 icon here
-  webPreferences: {
-    nodeIntegration: true,
-    contextIsolation: false
-  }
 });
