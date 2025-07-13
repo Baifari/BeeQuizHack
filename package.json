@@ -13,22 +13,18 @@
     "directories": {
       "output": "dist"
     },
-
-  "files": [
-    "**/*",
-    "sounds/**/*"
- ],
-
+    "files": [
+      "**/*",
+      "sounds/**/*"
+    ],
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
-    }
+    },
+    "publish": null
   },
   "devDependencies": {
     "electron": "^28.0.0",
     "electron-builder": "^24.3.0"
-  },
-
-  "publish": null
-
+  }
 }
